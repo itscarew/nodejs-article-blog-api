@@ -10,7 +10,7 @@ exports.get_all_users = (req, res) => {
       res.status(200).json({ user });
     })
     .catch((err) => {
-      res.status(500).json({ message: "Something is wrong" });
+      res.status(500).json({ err: err });
     });
 };
 
@@ -21,14 +21,14 @@ exports.register_user = (req, res) => {
     .exec()
     .then((user) => {
       if (user.length >= 1) {
-        return res.status(400).json({
-          message: "Email already exists or username has already been taken",
+        return res.status(401).json({
+          err: "Email already exists or username has already been taken",
         });
       } else {
         bcrypt.hash(req.body.password, 10, (err, hash) => {
           if (err) {
             return res.status(500).json({
-              message: err,
+              err: err,
             });
           } else {
             const user = new User({
@@ -48,7 +48,7 @@ exports.register_user = (req, res) => {
               })
               .catch((err) => {
                 res.status(500).json({
-                  message: err,
+                  err: err,
                 });
               });
           }
@@ -63,13 +63,13 @@ exports.login_user = (req, res) => {
     .then((user) => {
       if (user.length < 1) {
         return res.status(401).json({
-          message: "This User does not exist !",
+          err: "This User does not exist !",
         });
       }
       bcrypt.compare(req.body.password, user[0].password, (err, result) => {
         if (err) {
           return res.status(401).json({
-            message: "Authentication Failed, Password Incorrect",
+            err: "Authentication Failed, Password Incorrect",
           });
         } else if (result) {
           const token = jwt.sign(
@@ -89,13 +89,13 @@ exports.login_user = (req, res) => {
           });
         } else
           res.status(401).json({
-            message: "Authentication Failed",
+            err: "Authentication Failed",
           });
       });
     })
     .catch((err) => {
       res.status(500).json({
-        message: err,
+        err: err,
       });
     });
 };
@@ -107,7 +107,7 @@ exports.get_logged_in_user_profile = (req, res) => {
       res.status(200).json({ user: user[0] });
     })
     .catch((err) => {
-      res.status(500).json({ message: err });
+      res.status(500).json({ err: err });
     });
 };
 
@@ -116,10 +116,12 @@ exports.get_a_user = (req, res) => {
   User.find({ _id: userId })
     .exec()
     .then((user) => {
-      res.status(200).json({ message: "User found", user: user[0] });
+      if (user.length < 1) {
+        res.status(404).json({ message: "No user exists" });
+      } else res.status(200).json({ message: "User found", user: user[0] });
     })
     .catch((err) => {
-      res.status(404).json({ message: "No user found" });
+      res.status(500).json({ err: err });
     });
 };
 
@@ -131,7 +133,7 @@ exports.delete_a_user = (req, res) => {
       res.status(200).json({ message: "User has been succesfully deleted" });
     })
     .catch((err) => {
-      res.status(404).json({ message: "User does not exist" });
+      res.status(500).json({ err: err });
     });
 };
 
@@ -151,7 +153,7 @@ exports.update_a_user = (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        message: err,
+        err: err,
       });
     });
 };
@@ -162,7 +164,7 @@ exports.update_a_user_password = (req, res) => {
   bcrypt.hash(password, 10, (err, hash) => {
     if (err) {
       return res.status(500).json({
-        message: err,
+        err: err,
       });
     } else {
       User.updateOne({ _id: userId }, { $set: { password: hash } })
@@ -175,7 +177,7 @@ exports.update_a_user_password = (req, res) => {
         })
         .catch((err) => {
           res.status(500).json({
-            message: "Error updating password",
+            err: err,
           });
         });
     }

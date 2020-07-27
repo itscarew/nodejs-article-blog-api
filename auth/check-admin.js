@@ -15,8 +15,8 @@ module.exports = (req, res, next) => {
       reject();
     }
   } catch (error) {
-    return res.status(401).json({
-      message: "You don't have the priviledge to access this route !!",
+    return res.status(403).json({
+      err: "You don't have the priviledge to access this route !!",
     });
   }
 };

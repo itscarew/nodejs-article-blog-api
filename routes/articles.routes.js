@@ -9,6 +9,8 @@ const {
   delete_an_article,
   update_an_article,
   get_all_articles_by_a_user,
+  like_an_article,
+  unlike_an_article,
 } = require("../controllers/articles.controllers");
 
 const checkAuth = require("../auth/check-auth");
@@ -35,6 +37,8 @@ const upload = multer({
   },
 });
 
+
+
 //route to get all articles
 router.get("/", checkAuth, checkAdmin, get_all_articles);
 
@@ -52,5 +56,11 @@ router.delete("/:articleId", checkAuth, delete_an_article);
 
 //route to update an article
 router.patch("/:articleId", checkAuth, update_an_article);
+
+//route for a user to like an article
+router.post("/:articleId/like", checkAuth, like_an_article);
+
+//route for a user to unlike an article
+router.post("/:articleId/unlike/:likeId", checkAuth, unlike_an_article);
 
 module.exports = router;

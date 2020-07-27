@@ -1,4 +1,5 @@
 const Articles = require("../models/articles.models");
+const Likes = require("../models/likes.models")
 
 exports.get_all_articles = (req, res) => {
   Articles.find()
@@ -7,7 +8,7 @@ exports.get_all_articles = (req, res) => {
       res.status(200).json({ article });
     })
     .catch((err) => {
-      res.status(500).json({ message: "Something went wrong" });
+      res.status(500).json({ err: err });
     });
 };
 
@@ -29,7 +30,7 @@ exports.create_an_article = (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        message: "Something went wrong , Article not created",
+        err: err,
       });
     });
 };
@@ -40,10 +41,14 @@ exports.get_an_article = (req, res) => {
     .populate("user", "_id username name email joined ")
     .exec()
     .then((article) => {
-      res.status(200).json({ message: "Article found", article :article[0] });
+      if (article.length < 1) {
+        res.status(400).json({ err: "Article does not exist" });
+      } else
+        res.status(200).json({ message: "Article found", article: article[0] });
     })
     .catch((err) => {
-      res.status(404).json({ message: "No article found" });
+      res.status(500).json({ err: err });
+      console.log(err);
     });
 };
 
@@ -58,7 +63,7 @@ exports.get_all_articles_by_a_user = (req, res) => {
         .json({ message: `Articles posted by user ${userId}`, article });
     })
     .catch((err) => {
-      res.status(404).json({ message: "No article found" });
+      res.status(500).json({ err: err });
     });
 };
 
@@ -72,7 +77,7 @@ exports.delete_an_article = (req, res) => {
         .json({ message: "Article deleted successfully", article });
     })
     .catch((err) => {
-      res.status(404).json({ message: "Article does not exist" });
+      res.status(500).json({ err: err });
     });
 };
 
@@ -98,7 +103,43 @@ exports.update_an_article = (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        message: err,
+        err: err,
       });
     });
 };
+
+exports.like_an_article = (req, res) => {
+  const { articleId } = req.params;
+  const like = new Likes({
+    article: articleId,
+    user: req.user.userId,
+  });
+
+  Articles.updateOne(
+    { _id: articleId },
+    { $push: { likes: like }, $inc: { likeCount: +1 } }
+  )
+    .exec()
+    .then((article) => {
+      res.status(201).json({ article: article });
+    })
+    .catch((err) => {
+      res.status(500).json({ err: err });
+    });
+};
+
+exports.unlike_an_article = (req, res) => {
+  const { articleId, likeId } = req.params;
+
+  Articles.updateOne(
+    { _id: articleId },
+    { $pull: { likes: likeId }, $inc: { likeCount: -1 } }
+  )
+    .exec()
+    .then((article) => {
+      res.status(201).json({ article: article });
+    })
+    .catch((err) => {
+      res.status(500).json({ err: err });
+    });
+}

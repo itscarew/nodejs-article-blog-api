@@ -7,6 +7,8 @@ const ArticleSchema = new mongoose.Schema({
   user: { type: String, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Likes" }],
+  likeCount: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("Article", ArticleSchema);
