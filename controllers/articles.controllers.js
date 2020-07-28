@@ -1,5 +1,5 @@
 const Articles = require("../models/articles.models");
-const Likes = require("../models/likes.models")
+const Likes = require("../models/likes.models");
 
 exports.get_all_articles = (req, res) => {
   Articles.find()
@@ -8,7 +8,7 @@ exports.get_all_articles = (req, res) => {
       res.status(200).json({ article });
     })
     .catch((err) => {
-      res.status(500).json({ err: err });
+      res.status(404).json({ err: err });
     });
 };
 
@@ -37,17 +37,17 @@ exports.create_an_article = (req, res) => {
 
 exports.get_an_article = (req, res) => {
   const { articleId } = req.params;
-  Articles.find({ _id: articleId })
+  Articles.findOne({ _id: articleId })
     .populate("user", "_id username name email joined ")
     .exec()
     .then((article) => {
-      if (article.length < 1) {
-        res.status(400).json({ err: "Article does not exist" });
+      if (!article) {
+        res.status(404).json({ err: "Article does not exist" });
       } else
-        res.status(200).json({ message: "Article found", article: article[0] });
+        res.status(200).json({ message: "Article found", article: article });
     })
     .catch((err) => {
-      res.status(500).json({ err: err });
+      res.status(400).json({ err: err });
       console.log(err);
     });
 };
@@ -63,7 +63,7 @@ exports.get_all_articles_by_a_user = (req, res) => {
         .json({ message: `Articles posted by user ${userId}`, article });
     })
     .catch((err) => {
-      res.status(500).json({ err: err });
+      res.status(404).json({ err: err });
     });
 };
 
@@ -142,4 +142,4 @@ exports.unlike_an_article = (req, res) => {
     .catch((err) => {
       res.status(500).json({ err: err });
     });
-}
+};

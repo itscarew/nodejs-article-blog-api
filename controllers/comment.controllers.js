@@ -23,8 +23,8 @@ exports.create_a_comment = (req, res) => {
   Articles.findById(articleId)
     .exec()
     .then((article) => {
-      if (article < 1) {
-        res.status(400).json({ err: "Article does not exist" });
+      if (!article) {
+        res.status(404).json({ err: "Article does not exist" });
       } else {
         return comment
           .save()
@@ -35,7 +35,7 @@ exports.create_a_comment = (req, res) => {
             });
           })
           .catch((err) => {
-            res.status(500).json({
+            res.status(400).json({
               err: err,
             });
           });
@@ -61,7 +61,7 @@ exports.get_all_comments_for_an_article = (req, res) => {
       });
     })
     .catch((err) => {
-      res.status(500).json({
+      res.status(404).json({
         err: err,
       });
     });
@@ -70,23 +70,23 @@ exports.get_all_comments_for_an_article = (req, res) => {
 exports.get_a_comment = (req, res) => {
   const { commentId } = req.params;
 
-  Comments.find({ _id: commentId })
+  Comments.findOne({ _id: commentId })
     .populate("user", "_id username name email joined ")
     .populate("article", "_id title content articleImage likeCount ")
     .exec()
     .then((comment) => {
-      if (comment.length < 1) {
+      if (!comment) {
         res.status(404).json({
           err: `comment does not exist `,
         });
       } else
         res.status(200).json({
           message: `comment found successfully`,
-          comment: comment[0],
+          comment: comment,
         });
     })
     .catch((err) => {
-      res.status(500).json({
+      res.status(400).json({
         err: err,
       });
     });
