@@ -8,7 +8,7 @@ exports.get_all_comments = (req, res) => {
       res.status(200).json({ comments: comment });
     })
     .catch((err) => {
-      res.status(500).json({ err: err });
+      res.status(400).json({ err: err });
     });
 };
 
@@ -42,7 +42,7 @@ exports.create_a_comment = (req, res) => {
       }
     })
     .catch((err) => {
-      res.status(500).json({
+      res.status(400).json({
         err: err,
       });
     });
@@ -51,17 +51,32 @@ exports.create_a_comment = (req, res) => {
 exports.get_all_comments_for_an_article = (req, res) => {
   const { articleId } = req.params;
 
-  Comments.find({ article: articleId })
-    .select("_id  content user  createdAt ")
+  Articles.findById(articleId)
     .exec()
-    .then((comment) => {
-      res.status(201).json({
-        message: `Comments for ${articleId} article found`,
-        comment: comment,
-      });
+    .then((article) => {
+      if (!article) {
+        res.status(404).json({
+          err: "This article does not exist",
+        });
+      } else {
+        Comments.find({ article: articleId })
+          .select("_id  content user  createdAt ")
+          .exec()
+          .then((comment) => {
+            res.status(200).json({
+              message: `Comments for ${articleId} article found`,
+              comment: comment,
+            });
+          })
+          .catch((err) => {
+            res.status(400).json({
+              err: err,
+            });
+          });
+      }
     })
     .catch((err) => {
-      res.status(404).json({
+      res.status(400).json({
         err: err,
       });
     });
@@ -104,7 +119,7 @@ exports.delete_a_comment = (req, res) => {
       });
     })
     .catch((err) => {
-      res.status(500).json({
+      res.status(400).json({
         err: err,
       });
     });

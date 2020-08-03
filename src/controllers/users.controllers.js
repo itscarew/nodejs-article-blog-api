@@ -10,7 +10,7 @@ exports.get_all_users = (req, res) => {
       res.status(200).json({ user });
     })
     .catch((err) => {
-      res.status(500).json({ err: err });
+      res.status(400).json({ err: err });
     });
 };
 
@@ -47,7 +47,7 @@ exports.register_user = (req, res) => {
                 });
               })
               .catch((err) => {
-                res.status(500).json({
+                res.status(400).json({
                   err: err,
                 });
               });
@@ -135,7 +135,7 @@ exports.delete_a_user = (req, res) => {
       res.status(200).json({ message: "User has been succesfully deleted" });
     })
     .catch((err) => {
-      res.status(500).json({ err: err });
+      res.status(400).json({ err: err });
     });
 };
 
@@ -154,7 +154,7 @@ exports.update_a_user = (req, res) => {
       });
     })
     .catch((err) => {
-      res.status(500).json({
+      res.status(400).json({
         err: err,
       });
     });
@@ -178,7 +178,7 @@ exports.update_a_user_password = (req, res) => {
           });
         })
         .catch((err) => {
-          res.status(500).json({
+          res.status(400).json({
             err: err,
           });
         });

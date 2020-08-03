@@ -1,3 +1,4 @@
+const User = require("../models/user.models");
 const Articles = require("../models/articles.models");
 const Likes = require("../models/likes.models");
 
@@ -8,7 +9,7 @@ exports.get_all_articles = (req, res) => {
       res.status(200).json({ article });
     })
     .catch((err) => {
-      res.status(404).json({ err: err });
+      res.status(400).json({ err: err });
     });
 };
 
@@ -29,7 +30,7 @@ exports.create_an_article = (req, res) => {
       });
     })
     .catch((err) => {
-      res.status(500).json({
+      res.status(400).json({
         err: err,
       });
     });
@@ -54,16 +55,28 @@ exports.get_an_article = (req, res) => {
 
 exports.get_all_articles_by_a_user = (req, res) => {
   const { userId } = req.params;
-  Articles.find({ user: userId })
-    .select("_id title content articleImage createdAt updatedAt")
+
+  User.findById(userId)
     .exec()
-    .then((article) => {
-      res
-        .status(200)
-        .json({ message: `Articles posted by user ${userId}`, article });
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({ err: "This user does not exists !!" });
+      } else {
+        Articles.find({ user: userId })
+          .select("_id title content articleImage createdAt updatedAt")
+          .exec()
+          .then((article) => {
+            res
+              .status(200)
+              .json({ message: `Articles posted by user ${userId}`, article });
+          })
+          .catch((err) => {
+            res.status(400).json({ err: err });
+          });
+      }
     })
     .catch((err) => {
-      res.status(404).json({ err: err });
+      res.status(400).json({ err: err });
     });
 };
 
@@ -77,7 +90,7 @@ exports.delete_an_article = (req, res) => {
         .json({ message: "Article deleted successfully", article });
     })
     .catch((err) => {
-      res.status(500).json({ err: err });
+      res.status(400).json({ err: err });
     });
 };
 
@@ -102,7 +115,7 @@ exports.update_an_article = (req, res) => {
       });
     })
     .catch((err) => {
-      res.status(500).json({
+      res.status(400).json({
         err: err,
       });
     });
@@ -124,7 +137,7 @@ exports.like_an_article = (req, res) => {
       res.status(201).json({ article: article });
     })
     .catch((err) => {
-      res.status(500).json({ err: err });
+      res.status(400).json({ err: err });
     });
 };
 
@@ -137,9 +150,9 @@ exports.unlike_an_article = (req, res) => {
   )
     .exec()
     .then((article) => {
-      res.status(201).json({ article: article });
+      res.status(200).json({ article: article });
     })
     .catch((err) => {
-      res.status(500).json({ err: err });
+      res.status(400).json({ err: err });
     });
 };
