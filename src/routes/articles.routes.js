@@ -5,12 +5,11 @@ const router = express.Router();
 const {
   get_all_articles,
   create_an_article,
-  get_an_article,
-  delete_an_article,
-  update_an_article,
-  get_all_articles_by_a_user,
-  like_an_article,
-  unlike_an_article,
+  get_any_article,
+  delete_any_article,
+  get_all_articles_by_any_user,
+  like_any_article,
+  unlike_any_article,
 } = require("../controllers/articles.controllers");
 
 const checkAuth = require("../auth/check-auth");
@@ -37,30 +36,25 @@ const upload = multer({
   },
 });
 
-
-
 //route to get all articles
-router.get("/", checkAuth, checkAdmin, get_all_articles);
+router.get("/", checkAuth, get_all_articles);
 
 //route to create an article
 router.post("/", upload.single("articleImage"), checkAuth, create_an_article);
 
-//route to get an article
-router.get("/:articleId", checkAuth, get_an_article);
+//route to get any article
+router.get("/:articleId", checkAuth, get_any_article);
 
-//route to get all articles posted by a user
-router.get("/user/:userId", checkAuth, get_all_articles_by_a_user);
+//route to delete any article (admin priviledges)
+router.delete("/:articleId", checkAuth, checkAdmin, delete_any_article);
 
-//route to delete an article
-router.delete("/:articleId", checkAuth, delete_an_article);
+//route to get all articles posted by any user
+router.get("/user/:userId", checkAuth, get_all_articles_by_any_user);
 
-//route to update an article
-router.patch("/:articleId", checkAuth, update_an_article);
+//route for a user to like any article
+router.post("/:articleId/like", checkAuth, like_any_article);
 
-//route for a user to like an article
-router.post("/:articleId/like", checkAuth, like_an_article);
-
-//route for a user to unlike an article
-router.post("/:articleId/unlike/:likeId", checkAuth, unlike_an_article);
+//route for a user to unlike any article
+router.post("/:articleId/unlike/:likeId", checkAuth, unlike_any_article);
 
 module.exports = router;

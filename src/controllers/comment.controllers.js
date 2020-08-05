@@ -8,7 +8,7 @@ exports.get_all_comments = (req, res) => {
       res.status(200).json({ comments: comment });
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
+      res.status(400).json({ err: err.message });
     });
 };
 
@@ -36,14 +36,14 @@ exports.create_a_comment = (req, res) => {
           })
           .catch((err) => {
             res.status(400).json({
-              err: err,
+              err: err.message,
             });
           });
       }
     })
     .catch((err) => {
       res.status(400).json({
-        err: err,
+        err: err.message,
       });
     });
 };
@@ -70,14 +70,14 @@ exports.get_all_comments_for_an_article = (req, res) => {
           })
           .catch((err) => {
             res.status(400).json({
-              err: err,
+              err: err.message,
             });
           });
       }
     })
     .catch((err) => {
       res.status(400).json({
-        err: err,
+        err: err.message,
       });
     });
 };
@@ -102,7 +102,7 @@ exports.get_a_comment = (req, res) => {
     })
     .catch((err) => {
       res.status(400).json({
-        err: err,
+        err: err.message,
       });
     });
 };
@@ -120,7 +120,7 @@ exports.delete_a_comment = (req, res) => {
     })
     .catch((err) => {
       res.status(400).json({
-        err: err,
+        err: err.message,
       });
     });
 };

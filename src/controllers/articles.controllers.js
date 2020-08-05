@@ -6,10 +6,10 @@ exports.get_all_articles = (req, res) => {
   Articles.find()
     .exec()
     .then((article) => {
-      res.status(200).json({ article });
+      res.status(200).json({ articles: article });
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
+      res.status(400).json({ err: err.message });
     });
 };
 
@@ -31,12 +31,12 @@ exports.create_an_article = (req, res) => {
     })
     .catch((err) => {
       res.status(400).json({
-        err: err,
+        err: err.message,
       });
     });
 };
 
-exports.get_an_article = (req, res) => {
+exports.get_any_article = (req, res) => {
   const { articleId } = req.params;
   Articles.findOne({ _id: articleId })
     .populate("user", "_id username name email joined ")
@@ -48,12 +48,11 @@ exports.get_an_article = (req, res) => {
         res.status(200).json({ message: "Article found", article: article });
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
-      console.log(err);
+      res.status(400).json({ err: err.message });
     });
 };
 
-exports.get_all_articles_by_a_user = (req, res) => {
+exports.get_all_articles_by_any_user = (req, res) => {
   const { userId } = req.params;
 
   User.findById(userId)
@@ -71,18 +70,31 @@ exports.get_all_articles_by_a_user = (req, res) => {
               .json({ message: `Articles posted by user ${userId}`, article });
           })
           .catch((err) => {
-            res.status(400).json({ err: err });
+            res.status(400).json({ err: err.message });
           });
       }
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
+      res.status(400).json({ err: err.message });
     });
 };
 
-exports.delete_an_article = (req, res) => {
+exports.get_user_profile_article = (req, res) => {
+  const { userId } = req.user;
+  Articles.find({ user: userId })
+    .exec()
+    .then((article) => {
+      res.status(200).json({ message: "All your article", articles: article });
+    })
+    .catch((err) => {
+      err: err.message;
+    });
+};
+
+exports.delete_user_profile_article = (req, res) => {
   const { articleId } = req.params;
-  Articles.deleteOne({ _id: articleId })
+  const { userId } = req.user;
+  Articles.deleteOne({ $and: [{ _id: articleId }, { user: userId }] })
     .exec()
     .then((article) => {
       res
@@ -90,23 +102,27 @@ exports.delete_an_article = (req, res) => {
         .json({ message: "Article deleted successfully", article });
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
+      res.status(400).json({ err: err.message });
     });
 };
 
-exports.update_an_article = (req, res) => {
+exports.update_user_profile_article = (req, res) => {
   const { articleId } = req.params;
+  const { userId } = req.user;
 
-  Articles.updateOne(
-    { _id: articleId },
-    {
-      $set: {
-        title: req.body.title,
-        content: req.body.content,
-        updatedAt: new Date(),
+  Articles.updateOne({
+    $and: [
+      { _id: articleId },
+      { user: userId },
+      {
+        $set: {
+          title: req.body.title,
+          content: req.body.content,
+          updatedAt: new Date(),
+        },
       },
-    }
-  )
+    ],
+  })
     .exec()
     .then((article) => {
       res.status(200).json({
@@ -116,12 +132,26 @@ exports.update_an_article = (req, res) => {
     })
     .catch((err) => {
       res.status(400).json({
-        err: err,
+        err: err.message,
       });
     });
 };
 
-exports.like_an_article = (req, res) => {
+exports.delete_any_article = (req, res) => {
+  const { articleId } = req.params;
+  Articles.deleteOne({ _id: articleId })
+    .exec()
+    .then((article) => {
+      res
+        .status(200)
+        .json({ message: "Article deleted successfully", article });
+    })
+    .catch((err) => {
+      res.status(400).json({ err: err.message });
+    });
+};
+
+exports.like_any_article = (req, res) => {
   const { articleId } = req.params;
   const like = new Likes({
     article: articleId,
@@ -137,11 +167,11 @@ exports.like_an_article = (req, res) => {
       res.status(201).json({ article: article });
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
+      res.status(400).json({ err: err.message });
     });
 };
 
-exports.unlike_an_article = (req, res) => {
+exports.unlike_any_article = (req, res) => {
   const { articleId, likeId } = req.params;
 
   Articles.updateOne(
@@ -153,6 +183,6 @@ exports.unlike_an_article = (req, res) => {
       res.status(200).json({ article: article });
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
+      res.status(400).json({ err: err.message });
     });
 };

@@ -12,7 +12,7 @@ const {
   delete_a_comment,
 } = require("../controllers/comment.controllers");
 
-//routes to get all comments
+//routes to get all comments (admin priviledges only)
 router.get("/", checkAuth, checkAdmin, get_all_comments);
 
 //route to create a comment (comment an article)

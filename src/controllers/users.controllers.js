@@ -7,10 +7,10 @@ exports.get_all_users = (req, res) => {
   User.find()
     .exec()
     .then((user) => {
-      res.status(200).json({ user });
+      res.status(200).json({ users: user });
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
+      res.status(400).json({ err: err.message });
     });
 };
 
@@ -28,7 +28,7 @@ exports.register_user = (req, res) => {
         bcrypt.hash(req.body.password, 10, (err, hash) => {
           if (err) {
             return res.status(404).json({
-              err: err,
+              err: err.message,
             });
           } else {
             const user = new User({
@@ -48,7 +48,7 @@ exports.register_user = (req, res) => {
               })
               .catch((err) => {
                 res.status(400).json({
-                  err: err,
+                  err: err.message,
                 });
               });
           }
@@ -89,18 +89,18 @@ exports.login_user = (req, res) => {
           });
         } else
           res.status(401).json({
-            err: "Authentication Failed",
+            err: "Authentication Failed. Can't log In",
           });
       });
     })
     .catch((err) => {
       res.status(400).json({
-        err: err,
+        err: err.message,
       });
     });
 };
 
-exports.get_logged_in_user_profile = (req, res) => {
+exports.get_user_profile = (req, res) => {
   User.findOne({ _id: req.user.userId })
     .exec()
     .then((user) => {
@@ -109,38 +109,27 @@ exports.get_logged_in_user_profile = (req, res) => {
       } else res.status(200).json({ user: user });
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
+      res.status(400).json({ err: err.message });
     });
 };
 
-exports.get_a_user = (req, res) => {
-  const { userId } = req.params;
-  User.findOne({ _id: userId })
+exports.delete_user_profile = (req, res) => {
+  User.deleteOne({ _id: req.user.userId })
     .exec()
-    .then((user) => {
-      if (!user) {
-        res.status(404).json({ err: "No user exists" });
-      } else res.status(200).json({ message: "User found", user: user });
+    .then(() => {
+      res.status(200).json({
+        message: "You just deleted your account.",
+      });
     })
     .catch((err) => {
-      res.status(400).json({ err: err });
+      res.status(404).json({
+        err: err.message,
+      });
     });
 };
 
-exports.delete_a_user = (req, res) => {
-  const { userId } = req.params;
-  User.deleteOne({ _id: userId })
-    .exec()
-    .then((user) => {
-      res.status(200).json({ message: "User has been succesfully deleted" });
-    })
-    .catch((err) => {
-      res.status(400).json({ err: err });
-    });
-};
-
-exports.update_a_user = (req, res) => {
-  const { userId } = req.params;
+exports.update_user_profile = (req, res) => {
+  const { userId } = req.user;
   const updateOps = {};
   for (const ops of req.body) {
     updateOps[ops.propName] = ops.value;
@@ -155,18 +144,18 @@ exports.update_a_user = (req, res) => {
     })
     .catch((err) => {
       res.status(400).json({
-        err: err,
+        err: err.message,
       });
     });
 };
 
-exports.update_a_user_password = (req, res) => {
-  const { userId } = req.params;
+exports.update_user_profile_password = (req, res) => {
+  const { userId } = req.user;
   const { password } = req.body;
   bcrypt.hash(password, 10, (err, hash) => {
     if (err) {
       return res.status(404).json({
-        err: err,
+        err: err.message,
       });
     } else {
       User.updateOne({ _id: userId }, { $set: { password: hash } })
@@ -179,9 +168,35 @@ exports.update_a_user_password = (req, res) => {
         })
         .catch((err) => {
           res.status(400).json({
-            err: err,
+            err: err.message,
           });
         });
     }
   });
+};
+
+exports.get_any_user = (req, res) => {
+  const { userId } = req.params;
+  User.findOne({ _id: userId })
+    .exec()
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({ err: "User does not exists" });
+      } else res.status(200).json({ message: "User found", user: user });
+    })
+    .catch((err) => {
+      res.status(400).json({ err: err.message });
+    });
+};
+
+exports.delete_any_user = (req, res) => {
+  const { userId } = req.params;
+  User.deleteOne({ _id: userId })
+    .exec()
+    .then((user) => {
+      res.status(200).json({ message: "User has been succesfully deleted" });
+    })
+    .catch((err) => {
+      res.status(400).json({ err: err.message });
+    });
 };
